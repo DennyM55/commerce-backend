@@ -31,4 +31,13 @@ public class ProductServiceImpl implements ProductService {
     public Product getProductByID(Long id) {
         return repository.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
     }
+
+    @Override
+    public Product updateProduct(Long id, Product product) {
+        Product existingProduct = getProductByID(id);
+        existingProduct.setName(product.getName());
+        existingProduct.setPrice(product.getPrice());
+        return repository.save(existingProduct);
+    }
+
 }
