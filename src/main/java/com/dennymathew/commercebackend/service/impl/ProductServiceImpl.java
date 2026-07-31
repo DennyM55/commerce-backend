@@ -1,6 +1,7 @@
 package com.dennymathew.commercebackend.service.impl;
 
 import com.dennymathew.commercebackend.entity.Product;
+import com.dennymathew.commercebackend.exception.ProductNotFoundException;
 import com.dennymathew.commercebackend.repository.ProductRepository;
 import com.dennymathew.commercebackend.service.ProductService;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,6 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product getProductByID(Long id) {
-        return repository.findById(id).orElse(null);
+        return repository.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
     }
 }
