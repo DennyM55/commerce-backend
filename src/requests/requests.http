@@ -31,4 +31,4 @@ Content-Type: application/json
 ###
 
 ### Delete Product
-DELETE http://localhost:8080/api/products/1
+DELETE http://localhost:8080/api/products/2
