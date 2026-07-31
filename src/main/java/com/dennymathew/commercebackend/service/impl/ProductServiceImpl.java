@@ -40,4 +40,10 @@ public class ProductServiceImpl implements ProductService {
         return repository.save(existingProduct);
     }
 
+    @Override
+    public void deleteProduct(Long id) {
+        Product existingProduct = getProductByID(id);
+        repository.delete(existingProduct);
+    }
+
 }
