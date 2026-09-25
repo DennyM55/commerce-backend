@@ -27,4 +27,9 @@ public class ProductController {
         // Call the service layer to get all products
         return productService.getAllProducts();
     }
+
+    @GetMapping("/{id}")
+    public Product getProductByID(@PathVariable Long id) {
+        return productService.getProductByID(id);
+    }
 }
