@@ -2,6 +2,7 @@ package com.dennymathew.commercebackend.controller;
 
 import com.dennymathew.commercebackend.entity.Product;
 import com.dennymathew.commercebackend.service.ProductService;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -39,6 +40,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
     }
