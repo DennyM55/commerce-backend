@@ -2,6 +2,7 @@ package com.dennymathew.commercebackend.controller;
 
 import com.dennymathew.commercebackend.entity.Product;
 import com.dennymathew.commercebackend.service.ProductService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +19,7 @@ public class ProductController {
 
     //accepts a Product in the request body and returns the saved product.
     @PostMapping
-    public Product saveProduct(@RequestBody Product product) {
+    public Product saveProduct(@Valid @RequestBody Product product) {
         // Call the service layer to save the product
         return productService.save(product);
     }
@@ -35,7 +36,7 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    public Product updateProduct(@PathVariable Long id, @RequestBody Product product) {
+    public Product updateProduct(@PathVariable Long id, @Valid @RequestBody Product product) {
         return productService.updateProduct(id, product);
     }
 

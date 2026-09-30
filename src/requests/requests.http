@@ -32,3 +32,12 @@ Content-Type: application/json
 
 ### Delete Product
 DELETE http://localhost:8080/api/products/2
+
+###
+POST http://localhost:8080/api/products
+Content-Type: application/json
+
+{
+  "name": "",
+  "price": -10
+}
