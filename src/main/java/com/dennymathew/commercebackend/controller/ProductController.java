@@ -1,5 +1,8 @@
+
 package com.dennymathew.commercebackend.controller;
 
+import com.dennymathew.commercebackend.dto.ProductRequest;
+import com.dennymathew.commercebackend.dto.ProductResponse;
 import com.dennymathew.commercebackend.entity.Product;
 import com.dennymathew.commercebackend.service.ProductService;
 import jakarta.validation.Valid;
@@ -11,38 +14,63 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/products")
 public class ProductController {
-    ProductService productService;
+
+    private final ProductService productService;
 
     public ProductController(ProductService productService) {
         this.productService = productService;
     }
 
-    //accepts a Product in the request body and returns the saved product.
     @PostMapping
-    public Product saveProduct(@Valid @RequestBody Product product) {
-        // Call the service layer to save the product
-        return productService.save(product);
+    @ResponseStatus(HttpStatus.CREATED)
+    public ProductResponse saveProduct(
+            @Valid @RequestBody ProductRequest request) {
+
+        Product saved = productService.save(toEntity(request));
+        return toResponse(saved);
     }
 
     @GetMapping
-    public List<Product> getAllProducts() {
-        // Call the service layer to get all products
-        return productService.getAllProducts();
+    public List<ProductResponse> getAllProducts() {
+        return productService.getAllProducts()
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @GetMapping("/{id}")
-    public Product getProductByID(@PathVariable Long id) {
-        return productService.getProductByID(id);
+    public ProductResponse getProductByID(@PathVariable Long id) {
+        return toResponse(productService.getProductByID(id));
     }
 
     @PutMapping("/{id}")
-    public Product updateProduct(@PathVariable Long id, @Valid @RequestBody Product product) {
-        return productService.updateProduct(id, product);
+    public ProductResponse updateProduct(
+            @PathVariable Long id,
+            @Valid @RequestBody ProductRequest request) {
+
+        Product updated =
+                productService.updateProduct(id, toEntity(request));
+        return toResponse(updated);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
+    }
+
+    private Product toEntity(ProductRequest request) {
+        Product product = new Product();
+        product.setName(request.name());
+        product.setPrice(request.price());
+        return product;
+    }
+
+    private ProductResponse toResponse(Product product) {
+        return new ProductResponse(
+                product.getId(),
+                product.getName(),
+                product.getPrice()
+        );
     }
 }
