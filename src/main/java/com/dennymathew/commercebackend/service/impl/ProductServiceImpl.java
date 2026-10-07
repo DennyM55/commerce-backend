@@ -1,10 +1,16 @@
+
 package com.dennymathew.commercebackend.service.impl;
 
+import com.dennymathew.commercebackend.entity.Category;
 import com.dennymathew.commercebackend.entity.Product;
 import com.dennymathew.commercebackend.exception.ProductNotFoundException;
+import com.dennymathew.commercebackend.repository.CategoryRepository;
 import com.dennymathew.commercebackend.repository.ProductRepository;
 import com.dennymathew.commercebackend.service.ProductService;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -12,13 +18,23 @@ import java.util.List;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository repository;
+    private final CategoryRepository categoryRepository;
 
-    public ProductServiceImpl(ProductRepository repository) {
+    public ProductServiceImpl(
+            ProductRepository repository,
+            CategoryRepository categoryRepository) {
+
         this.repository = repository;
+        this.categoryRepository = categoryRepository;
     }
 
     @Override
-    public Product save(Product product) {
+    public Product save(Product product, Long categoryId) {
+
+        if (categoryId != null) {
+            product.setCategory(findCategory(categoryId));
+        }
+
         return repository.save(product);
     }
 
@@ -29,21 +45,41 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product getProductByID(Long id) {
-        return repository.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
+        return repository.findById(id)
+                .orElseThrow(() ->
+                        new ProductNotFoundException(id));
     }
 
     @Override
-    public Product updateProduct(Long id, Product product) {
-        Product existingProduct = getProductByID(id);
-        existingProduct.setName(product.getName());
-        existingProduct.setPrice(product.getPrice());
-        return repository.save(existingProduct);
+    public Product updateProduct(
+            Long id,
+            Product product,
+            Long categoryId) {
+
+        Product existing = getProductByID(id);
+
+        existing.setName(product.getName());
+        existing.setPrice(product.getPrice());
+
+        if (categoryId != null) {
+            existing.setCategory(findCategory(categoryId));
+        }
+
+        return repository.save(existing);
     }
 
     @Override
     public void deleteProduct(Long id) {
-        Product existingProduct = getProductByID(id);
-        repository.delete(existingProduct);
+        Product existing = getProductByID(id);
+        repository.delete(existing);
     }
 
+    private Category findCategory(Long id) {
+        return categoryRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Category not found: " + id
+                        ));
+    }
 }
