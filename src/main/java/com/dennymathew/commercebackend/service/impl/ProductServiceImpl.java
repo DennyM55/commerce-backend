@@ -82,4 +82,9 @@ public class ProductServiceImpl implements ProductService {
                                 "Category not found: " + id
                         ));
     }
+    @Override
+    public List<Product> getProductsByCategory(Long categoryId) {
+        findCategory(categoryId);
+        return repository.findByCategoryId(categoryId);
+    }
 }

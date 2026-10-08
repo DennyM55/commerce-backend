@@ -85,4 +85,14 @@ public class ProductController {
                 categoryId
         );
     }
+
+    @GetMapping("/category/{categoryId}")
+    public List<ProductResponse> getProductsByCategory(
+            @PathVariable Long categoryId) {
+
+        return productService.getProductsByCategory(categoryId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
 }
