@@ -3,12 +3,13 @@ package com.dennymathew.commercebackend.controller;
 
 import com.dennymathew.commercebackend.dto.ProductRequest;
 import com.dennymathew.commercebackend.dto.ProductResponse;
+import com.dennymathew.commercebackend.entity.Category;
 import com.dennymathew.commercebackend.entity.Product;
 import com.dennymathew.commercebackend.service.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
+import com.dennymathew.commercebackend.dto.ProductDetailResponse;
 import java.util.List;
 
 @RestController
@@ -95,4 +96,25 @@ public class ProductController {
                 .map(this::toResponse)
                 .toList();
     }
+
+    @GetMapping("/details")
+    public List<ProductDetailResponse> getAllProductDetails() {
+
+        return productService.getAllProductsWithCategory()
+                .stream()
+                .map(product -> {
+
+                    Category category = product.getCategory();
+
+                    return new ProductDetailResponse(
+                            product.getId(),
+                            product.getName(),
+                            product.getPrice(),
+                            category == null ? null : category.getId(),
+                            category == null ? null : category.getName()
+                    );
+                })
+                .toList();
+    }
+
 }
