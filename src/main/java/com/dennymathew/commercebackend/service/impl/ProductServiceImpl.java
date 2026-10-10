@@ -1,6 +1,7 @@
 
 package com.dennymathew.commercebackend.service.impl;
 
+import com.dennymathew.commercebackend.dto.ProductDetailResponse;
 import com.dennymathew.commercebackend.entity.Category;
 import com.dennymathew.commercebackend.entity.Product;
 import com.dennymathew.commercebackend.exception.ProductNotFoundException;
@@ -10,6 +11,7 @@ import com.dennymathew.commercebackend.service.ProductService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -91,6 +93,26 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<Product> getAllProductsWithCategory() {
         return repository.findAllWithCategory();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductDetailResponse> getProductDetailsLazy() {
+
+        return repository.findAll()
+                .stream()
+                .map(product -> {
+                    Category category = product.getCategory();
+
+                    return new ProductDetailResponse(
+                            product.getId(),
+                            product.getName(),
+                            product.getPrice(),
+                            category == null ? null : category.getId(),
+                            category == null ? null : category.getName()
+                    );
+                })
+                .toList();
     }
 
 }

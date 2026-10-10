@@ -117,4 +117,9 @@ public class ProductController {
                 .toList();
     }
 
+    @GetMapping("/details-lazy")
+    public List<ProductDetailResponse> getProductDetailsLazy() {
+        return productService.getProductDetailsLazy();
+    }
+
 }
