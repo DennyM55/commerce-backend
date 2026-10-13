@@ -24,4 +24,5 @@ public interface ProductService {
     List<Product> getProductsByCategory(Long categoryId);
     List<Product> getAllProductsWithCategory();
     List<ProductDetailResponse> getProductDetailsLazy();
+    List<Product> getProductsAbovePrice(Double price);
 }

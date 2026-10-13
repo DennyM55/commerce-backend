@@ -115,4 +115,11 @@ public class ProductServiceImpl implements ProductService {
                 .toList();
     }
 
+
+    @Override
+    public List<Product> getProductsAbovePrice(Double price) {
+        return repository.findProductsAbovePrice(price);
+    }
+
+
 }

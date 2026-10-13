@@ -122,4 +122,16 @@ public class ProductController {
         return productService.getProductDetailsLazy();
     }
 
+
+    @GetMapping("/above-price")
+    public List<ProductResponse> getProductsAbovePrice(
+            @RequestParam Double price) {
+
+        return productService.getProductsAbovePrice(price)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+
 }
