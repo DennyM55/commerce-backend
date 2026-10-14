@@ -5,6 +5,8 @@ import com.dennymathew.commercebackend.dto.ProductDetailResponse;
 import com.dennymathew.commercebackend.entity.Product;
 
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface ProductService {
 
@@ -25,4 +27,6 @@ public interface ProductService {
     List<Product> getAllProductsWithCategory();
     List<ProductDetailResponse> getProductDetailsLazy();
     List<Product> getProductsAbovePrice(Double price);
+
+    Page<Product> getProducts(Pageable pageable);
 }
