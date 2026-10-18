@@ -24,4 +24,5 @@ public interface ProductRepository
     List<Product> findProductsAbovePrice(
             @Param("price") Double price);
 
+    List<Product> findByNameContainingIgnoreCase(String name);
 }
