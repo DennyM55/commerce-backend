@@ -85,6 +85,7 @@ public class ProductServiceImpl implements ProductService {
                                 "Category not found: " + id
                         ));
     }
+
     @Override
     public List<Product> getProductsByCategory(Long categoryId) {
         findCategory(categoryId);
@@ -126,8 +127,18 @@ public class ProductServiceImpl implements ProductService {
     public Page<Product> getProducts(Pageable pageable) {
         return repository.findAll(pageable);
     }
+
     @Override
     public List<Product> searchProducts(String name) {
         return repository.findByNameContainingIgnoreCase(name);
+    }
+
+    @Override
+    public Page<Product> searchProducts(
+            String name,
+            Pageable pageable) {
+
+        return repository.findByNameContainingIgnoreCase(
+                name, pageable);
     }
 }
