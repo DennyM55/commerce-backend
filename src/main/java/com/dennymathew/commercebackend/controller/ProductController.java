@@ -1,18 +1,20 @@
 
 package com.dennymathew.commercebackend.controller;
 
+import com.dennymathew.commercebackend.dto.ProductDetailResponse;
 import com.dennymathew.commercebackend.dto.ProductRequest;
 import com.dennymathew.commercebackend.dto.ProductResponse;
 import com.dennymathew.commercebackend.entity.Category;
 import com.dennymathew.commercebackend.entity.Product;
 import com.dennymathew.commercebackend.service.ProductService;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
-import com.dennymathew.commercebackend.dto.ProductDetailResponse;
-import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/products")
 public class ProductController {
@@ -131,6 +133,7 @@ public class ProductController {
                 .map(this::toResponse)
                 .toList();
     }
+
     @GetMapping("/search")
     public Page<ProductResponse> searchProducts(
             @RequestParam String name,
