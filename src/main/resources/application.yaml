@@ -16,3 +16,9 @@ spring:
     redis:
       host: localhost
       port: 6381
+
+  cache:
+    type: redis
+    redis:
+      time-to-live: 10m
+      cache-null-values: false
