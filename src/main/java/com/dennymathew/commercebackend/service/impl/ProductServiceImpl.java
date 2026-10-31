@@ -76,6 +76,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @CacheEvict(value = "products", key = "#id")
     public void deleteProduct(Long id) {
         Product existing = getProductByID(id);
         repository.delete(existing);
