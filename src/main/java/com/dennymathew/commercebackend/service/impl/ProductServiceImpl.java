@@ -2,6 +2,7 @@
 package com.dennymathew.commercebackend.service.impl;
 
 import com.dennymathew.commercebackend.dto.ProductDetailResponse;
+import com.dennymathew.commercebackend.dto.ProductResponse;
 import com.dennymathew.commercebackend.entity.Category;
 import com.dennymathew.commercebackend.entity.Product;
 import com.dennymathew.commercebackend.exception.ProductNotFoundException;
@@ -49,7 +50,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @Cacheable(value = "products", key = "#id")
     public Product getProductByID(Long id) {
         return repository.findById(id)
                 .orElseThrow(() ->
@@ -145,5 +145,24 @@ public class ProductServiceImpl implements ProductService {
 
         return repository.findByNameContainingIgnoreCase(
                 name, pageable);
+    }
+
+    @Override
+    @Cacheable(value = "products", key = "#id")
+    @Transactional(readOnly = true)
+    public ProductResponse getProductResponseById(Long id) {
+
+        Product product = getProductByID(id);
+
+        Long categoryId = product.getCategory() == null
+                ? null
+                : product.getCategory().getId();
+
+        return new ProductResponse(
+                product.getId(),
+                product.getName(),
+                product.getPrice(),
+                categoryId
+        );
     }
 }
