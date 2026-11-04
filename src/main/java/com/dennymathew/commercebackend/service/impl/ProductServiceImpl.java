@@ -87,4 +87,10 @@ public class ProductServiceImpl implements ProductService {
         findCategory(categoryId);
         return repository.findByCategoryId(categoryId);
     }
+
+    @Override
+    public List<Product> getAllProductsWithCategory() {
+        return repository.findAllWithCategory();
+    }
+
 }
