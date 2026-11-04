@@ -1,6 +1,7 @@
 
 package com.dennymathew.commercebackend.service;
 
+import com.dennymathew.commercebackend.dto.ProductDetailResponse;
 import com.dennymathew.commercebackend.entity.Product;
 
 import java.util.List;
@@ -22,4 +23,5 @@ public interface ProductService {
     void deleteProduct(Long id);
     List<Product> getProductsByCategory(Long categoryId);
     List<Product> getAllProductsWithCategory();
+    List<ProductDetailResponse> getProductDetailsLazy();
 }
