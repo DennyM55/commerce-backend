@@ -26,7 +26,10 @@ public class ProductController {
     public ProductResponse saveProduct(
             @Valid @RequestBody ProductRequest request) {
 
-        Product saved = productService.save(toEntity(request));
+        Product saved = productService.save(
+                toEntity(request),
+                request.categoryId()
+        );
         return toResponse(saved);
     }
 
@@ -48,8 +51,11 @@ public class ProductController {
             @PathVariable Long id,
             @Valid @RequestBody ProductRequest request) {
 
-        Product updated =
-                productService.updateProduct(id, toEntity(request));
+        Product updated = productService.updateProduct(
+                id,
+                toEntity(request),
+                request.categoryId()
+        );
         return toResponse(updated);
     }
 
@@ -67,10 +73,16 @@ public class ProductController {
     }
 
     private ProductResponse toResponse(Product product) {
+
+        Long categoryId = product.getCategory() == null
+                ? null
+                : product.getCategory().getId();
+
         return new ProductResponse(
                 product.getId(),
                 product.getName(),
-                product.getPrice()
+                product.getPrice(),
+                categoryId
         );
     }
 }
