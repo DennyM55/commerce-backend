@@ -22,3 +22,7 @@ spring:
     redis:
       time-to-live: 10m
       cache-null-values: false
+
+server:
+  error:
+    include-stacktrace: never

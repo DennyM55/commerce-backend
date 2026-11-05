@@ -26,4 +26,15 @@ public class GlobalExceptionHandler {
 
         return errors;
     }
+
+    @ExceptionHandler(ProductNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, String> handleProductNotFound(
+            ProductNotFoundException exception) {
+
+        return Map.of(
+                "error", "Product not found",
+                "message", exception.getMessage()
+        );
+    }
 }
