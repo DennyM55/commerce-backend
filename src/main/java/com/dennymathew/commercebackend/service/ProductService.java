@@ -29,4 +29,5 @@ public interface ProductService {
     List<Product> getProductsAbovePrice(Double price);
 
     Page<Product> getProducts(Pageable pageable);
+    List<Product> searchProducts(String name);
 }
