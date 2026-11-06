@@ -1,0 +1,11 @@
+### Get product by ID
+GET http://localhost:8080/api/products/4
+
+### Get paginated products
+GET http://localhost:8080/api/products?page=0&size=5&sort=price,desc
+
+### Search products
+GET http://localhost:8080/api/products/search?name=laptop
+
+### Test missing product
+GET http://localhost:8080/api/products/7
