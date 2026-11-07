@@ -8,7 +8,8 @@ import com.dennymathew.commercebackend.exception.ProductNotFoundException;
 import com.dennymathew.commercebackend.repository.CategoryRepository;
 import com.dennymathew.commercebackend.repository.ProductRepository;
 import com.dennymathew.commercebackend.service.ProductService;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -121,5 +122,8 @@ public class ProductServiceImpl implements ProductService {
         return repository.findProductsAbovePrice(price);
     }
 
-
+    @Override
+    public Page<Product> getProducts(Pageable pageable) {
+        return repository.findAll(pageable);
+    }
 }
