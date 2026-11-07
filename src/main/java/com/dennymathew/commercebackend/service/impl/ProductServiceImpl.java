@@ -126,4 +126,8 @@ public class ProductServiceImpl implements ProductService {
     public Page<Product> getProducts(Pageable pageable) {
         return repository.findAll(pageable);
     }
+    @Override
+    public List<Product> searchProducts(String name) {
+        return repository.findByNameContainingIgnoreCase(name);
+    }
 }
