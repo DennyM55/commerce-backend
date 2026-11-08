@@ -11,7 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import com.dennymathew.commercebackend.dto.ProductDetailResponse;
 import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 @RestController
 @RequestMapping("/api/products")
 public class ProductController {
@@ -35,11 +36,9 @@ public class ProductController {
     }
 
     @GetMapping
-    public List<ProductResponse> getAllProducts() {
-        return productService.getAllProducts()
-                .stream()
-                .map(this::toResponse)
-                .toList();
+    public Page<ProductResponse> getAllProducts(Pageable pageable) {
+        return productService.getProducts(pageable)
+                .map(this::toResponse);
     }
 
     @GetMapping("/{id}")
