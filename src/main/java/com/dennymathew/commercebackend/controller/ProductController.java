@@ -131,6 +131,15 @@ public class ProductController {
                 .map(this::toResponse)
                 .toList();
     }
+    @GetMapping("/search")
+    public List<ProductResponse> searchProducts(
+            @RequestParam String name) {
+
+        return productService.searchProducts(name)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
 
 
 }
