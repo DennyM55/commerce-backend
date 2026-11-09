@@ -30,4 +30,5 @@ public interface ProductService {
 
     Page<Product> getProducts(Pageable pageable);
     List<Product> searchProducts(String name);
+    Page<Product> searchProducts(String name, Pageable pageable);
 }
