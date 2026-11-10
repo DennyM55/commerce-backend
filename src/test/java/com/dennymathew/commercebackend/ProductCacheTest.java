@@ -3,6 +3,7 @@ package com.dennymathew.commercebackend;
 import com.dennymathew.commercebackend.entity.Product;
 import com.dennymathew.commercebackend.repository.ProductRepository;
 import com.dennymathew.commercebackend.service.ProductService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,6 +23,7 @@ import static org.mockito.Mockito.verify;
 @SpringBootTest
 @ActiveProfiles("test")
 class ProductCacheTest {
+    private Long testProductId;
     @Autowired
     private ProductService productService;
     @MockitoSpyBean
@@ -68,11 +70,14 @@ class ProductCacheTest {
     }
 
     private Product createTestProduct() {
+
         Product product = new Product();
         product.setName("Test Laptop");
         product.setPrice(50000.0);
 
-        return productRepository.save(product);
+        Product saved = productRepository.save(product);
+        testProductId = saved.getId();
+        return saved;
     }
 
     @Test
@@ -92,5 +97,14 @@ class ProductCacheTest {
         productService.getProductResponseById(id);
 
         verify(productRepository, times(1)).findById(id);
+    }
+
+    @AfterEach
+    void cleanup() {
+        if (testProductId != null) {
+            cacheManager.getCache("products-v2").evict(testProductId);
+            productRepository.deleteById(testProductId);
+            testProductId = null;
+        }
     }
 }
