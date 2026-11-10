@@ -1,6 +1,6 @@
 
 package com.dennymathew.commercebackend.service.impl;
-import org.springframework.cache.annotation.Cacheable;
+
 import com.dennymathew.commercebackend.dto.ProductDetailResponse;
 import com.dennymathew.commercebackend.entity.Category;
 import com.dennymathew.commercebackend.entity.Product;
@@ -8,6 +8,8 @@ import com.dennymathew.commercebackend.exception.ProductNotFoundException;
 import com.dennymathew.commercebackend.repository.CategoryRepository;
 import com.dennymathew.commercebackend.repository.ProductRepository;
 import com.dennymathew.commercebackend.service.ProductService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -55,6 +57,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @CacheEvict(value = "products", key = "#id")
     public Product updateProduct(
             Long id,
             Product product,
