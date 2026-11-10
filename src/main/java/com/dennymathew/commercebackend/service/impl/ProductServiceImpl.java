@@ -1,6 +1,6 @@
 
 package com.dennymathew.commercebackend.service.impl;
-
+import org.springframework.cache.annotation.Cacheable;
 import com.dennymathew.commercebackend.dto.ProductDetailResponse;
 import com.dennymathew.commercebackend.entity.Category;
 import com.dennymathew.commercebackend.entity.Product;
@@ -47,6 +47,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Cacheable(value = "products", key = "#id")
     public Product getProductByID(Long id) {
         return repository.findById(id)
                 .orElseThrow(() ->
