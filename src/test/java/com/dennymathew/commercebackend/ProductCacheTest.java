@@ -12,8 +12,9 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
-
 import javax.sql.DataSource;
+
+import com.dennymathew.commercebackend.dto.ProductResponse;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -99,6 +100,26 @@ class ProductCacheTest {
         verify(productRepository, times(1)).findById(id);
     }
 
+    @Test
+    void shouldEvictCacheWhenProductIsUpdated() {
+
+        Product product = createTestProduct();
+        Long id = product.getId();
+
+        productService.getProductResponseById(id);
+
+        Product updated = new Product();
+        updated.setName("Updated Laptop");
+        updated.setPrice(60000.0);
+
+        productService.updateProduct(id, updated, null);
+
+        ProductResponse response =
+                productService.getProductResponseById(id);
+
+        assertEquals("Updated Laptop", response.name());
+        assertEquals(60000.0, response.price());
+    }
     @AfterEach
     void cleanup() {
         if (testProductId != null) {
