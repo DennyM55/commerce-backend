@@ -1,6 +1,7 @@
 package com.dennymathew.commercebackend;
 
 import com.dennymathew.commercebackend.entity.Product;
+import com.dennymathew.commercebackend.exception.ProductNotFoundException;
 import com.dennymathew.commercebackend.repository.ProductRepository;
 import com.dennymathew.commercebackend.service.ProductService;
 import org.junit.jupiter.api.AfterEach;
@@ -10,8 +11,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import javax.sql.DataSource;
 
 import com.dennymathew.commercebackend.dto.ProductResponse;
@@ -19,8 +20,7 @@ import com.dennymathew.commercebackend.dto.ProductResponse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -28,7 +28,7 @@ class ProductCacheTest {
     private Long testProductId;
     @Autowired
     private ProductService productService;
-    @MockitoSpyBean
+    @Autowired
     private ProductRepository productRepository;
     @Autowired
     private CacheManager cacheManager;
@@ -36,6 +36,8 @@ class ProductCacheTest {
     private DataSource dataSource;
     @Autowired
     private RedisConnectionFactory redisConnectionFactory;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @Test
     void shouldHaveProductCacheConfigured() {
@@ -88,17 +90,15 @@ class ProductCacheTest {
         Product product = createTestProduct();
         Long id = product.getId();
 
-        cacheManager.getCache("products-v2").evict(id);
+        ProductResponse firstResponse = productService.getProductResponseById(id);
+        ProductResponse cacheHit = productService.getProductResponseById(id);
+        assertEquals(firstResponse, cacheHit);
 
-        System.out.println(
-                "Cache implementation: " +
-                        cacheManager.getCache("products-v2").getClass().getName()
-        );
+        jdbcTemplate.update("DELETE FROM product WHERE id = ?", id);
+        testProductId = null;
 
-        productService.getProductResponseById(id);
-        productService.getProductResponseById(id);
-
-        verify(productRepository, times(1)).findById(id);
+        ProductResponse cachedResponse = productService.getProductResponseById(id);
+        assertEquals(firstResponse, cachedResponse);
     }
 
     @Test
@@ -139,6 +139,22 @@ class ProductCacheTest {
 
         // Prevent cleanup from deleting it again
         testProductId = null;
+    }
+
+    @Test
+    void shouldFailWhenReadingDeletedProduct() {
+
+        Product product = createTestProduct();
+        Long id = product.getId();
+
+        productService.getProductResponseById(id);
+        productService.deleteProduct(id);
+        testProductId = null;
+
+        assertThrows(
+                ProductNotFoundException.class,
+                () -> productService.getProductResponseById(id)
+        );
     }
 
     @AfterEach
