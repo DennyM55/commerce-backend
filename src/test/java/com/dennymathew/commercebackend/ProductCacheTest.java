@@ -18,6 +18,7 @@ import com.dennymathew.commercebackend.dto.ProductResponse;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -120,6 +121,26 @@ class ProductCacheTest {
         assertEquals("Updated Laptop", response.name());
         assertEquals(60000.0, response.price());
     }
+
+    @Test
+    void shouldEvictCacheWhenProductIsDeleted() {
+
+        Product product = createTestProduct();
+        Long id = product.getId();
+
+        // Cache the product
+        productService.getProductResponseById(id);
+
+        // Delete the product
+        productService.deleteProduct(id);
+
+        // Verify Redis no longer holds the product
+        assertNull(cacheManager.getCache("products-v2").get(id));
+
+        // Prevent cleanup from deleting it again
+        testProductId = null;
+    }
+
     @AfterEach
     void cleanup() {
         if (testProductId != null) {
