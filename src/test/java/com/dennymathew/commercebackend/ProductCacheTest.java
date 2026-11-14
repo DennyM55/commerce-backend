@@ -5,6 +5,7 @@ import com.dennymathew.commercebackend.exception.ProductNotFoundException;
 import com.dennymathew.commercebackend.repository.ProductRepository;
 import com.dennymathew.commercebackend.service.ProductService;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,6 +15,8 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import javax.sql.DataSource;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.dennymathew.commercebackend.dto.ProductResponse;
 
@@ -25,7 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @SpringBootTest
 @ActiveProfiles("test")
 class ProductCacheTest {
-    private Long testProductId;
+    private static final long CACHE_WAIT_MILLIS = 2_000;
+    private final List<Long> testProductIds = new ArrayList<>();
     @Autowired
     private ProductService productService;
     @Autowired
@@ -38,6 +42,11 @@ class ProductCacheTest {
     private RedisConnectionFactory redisConnectionFactory;
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @BeforeEach
+    void clearProductCache() {
+        cacheManager.getCache("products-v2").clear();
+    }
 
     @Test
     void shouldHaveProductCacheConfigured() {
@@ -80,8 +89,24 @@ class ProductCacheTest {
         product.setPrice(50000.0);
 
         Product saved = productRepository.save(product);
-        testProductId = saved.getId();
+        testProductIds.add(saved.getId());
         return saved;
+    }
+
+    private void awaitCacheState(Long id, boolean shouldBePresent)
+            throws InterruptedException {
+        long deadline = System.nanoTime() + CACHE_WAIT_MILLIS * 1_000_000;
+
+        while ((cacheManager.getCache("products-v2").get(id) != null)
+                != shouldBePresent && System.nanoTime() < deadline) {
+            Thread.sleep(10);
+        }
+
+        if (shouldBePresent) {
+            assertNotNull(cacheManager.getCache("products-v2").get(id));
+        } else {
+            assertNull(cacheManager.getCache("products-v2").get(id));
+        }
     }
 
     @Test
@@ -95,61 +120,78 @@ class ProductCacheTest {
         assertEquals(firstResponse, cacheHit);
 
         jdbcTemplate.update("DELETE FROM product WHERE id = ?", id);
-        testProductId = null;
 
         ProductResponse cachedResponse = productService.getProductResponseById(id);
         assertEquals(firstResponse, cachedResponse);
     }
 
     @Test
-    void shouldEvictCacheWhenProductIsUpdated() {
+    void shouldEvictOnlyUpdatedProduct() throws InterruptedException {
 
-        Product product = createTestProduct();
-        Long id = product.getId();
+        Product product10 = createTestProduct();
+        Product product11 = createTestProduct();
+        Long product10Id = product10.getId();
+        Long product11Id = product11.getId();
 
-        productService.getProductResponseById(id);
+        productService.getProductResponseById(product10Id);
+        productService.getProductResponseById(product11Id);
+        awaitCacheState(product10Id, true);
+        awaitCacheState(product11Id, true);
 
         Product updated = new Product();
         updated.setName("Updated Laptop");
         updated.setPrice(60000.0);
 
-        productService.updateProduct(id, updated, null);
+        productService.updateProduct(product10Id, updated, null);
 
-        ProductResponse response =
-                productService.getProductResponseById(id);
+        awaitCacheState(product10Id, false);
+        assertNotNull(cacheManager.getCache("products-v2").get(product11Id));
+
+        ProductResponse response = productService.getProductResponseById(product10Id);
 
         assertEquals("Updated Laptop", response.name());
         assertEquals(60000.0, response.price());
     }
 
     @Test
-    void shouldEvictCacheWhenProductIsDeleted() {
+    void shouldEvictOnlyDeletedProduct() throws InterruptedException {
 
-        Product product = createTestProduct();
-        Long id = product.getId();
+        Product product10 = createTestProduct();
+        Product product11 = createTestProduct();
+        Long product10Id = product10.getId();
+        Long product11Id = product11.getId();
 
-        // Cache the product
-        productService.getProductResponseById(id);
+        productService.getProductResponseById(product10Id);
+        ProductResponse product11Response =
+                productService.getProductResponseById(product11Id);
+        awaitCacheState(product10Id, true);
+        awaitCacheState(product11Id, true);
 
-        // Delete the product
-        productService.deleteProduct(id);
+        productService.deleteProduct(product10Id);
 
-        // Verify Redis no longer holds the product
-        assertNull(cacheManager.getCache("products-v2").get(id));
+        awaitCacheState(product10Id, false);
+        assertNotNull(cacheManager.getCache("products-v2").get(product11Id));
+        assertEquals(
+                product11Response,
+                productService.getProductResponseById(product11Id)
+        );
 
-        // Prevent cleanup from deleting it again
-        testProductId = null;
+        assertThrows(
+                ProductNotFoundException.class,
+                () -> productService.getProductResponseById(product10Id)
+        );
     }
 
     @Test
-    void shouldFailWhenReadingDeletedProduct() {
+    void shouldFailWhenReadingDeletedProduct() throws InterruptedException {
 
         Product product = createTestProduct();
         Long id = product.getId();
 
         productService.getProductResponseById(id);
+        awaitCacheState(id, true);
         productService.deleteProduct(id);
-        testProductId = null;
+        awaitCacheState(id, false);
 
         assertThrows(
                 ProductNotFoundException.class,
@@ -159,10 +201,10 @@ class ProductCacheTest {
 
     @AfterEach
     void cleanup() {
-        if (testProductId != null) {
-            cacheManager.getCache("products-v2").evict(testProductId);
-            productRepository.deleteById(testProductId);
-            testProductId = null;
+        cacheManager.getCache("products-v2").clear();
+        for (Long id : testProductIds) {
+            jdbcTemplate.update("DELETE FROM product WHERE id = ?", id);
         }
+        testProductIds.clear();
     }
 }
