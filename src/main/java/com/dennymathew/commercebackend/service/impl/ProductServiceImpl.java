@@ -57,7 +57,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @CacheEvict(value = "products-v2", allEntries = true, beforeInvocation = true)
+    @CacheEvict(value = "products-v2", key = "#id")
     public Product updateProduct(
             Long id,
             Product product,
@@ -76,7 +76,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @CacheEvict(value = "products-v2", allEntries = true, beforeInvocation = true)
+    @CacheEvict(value = "products-v2", key = "#id")
     public void deleteProduct(Long id) {
         Product existing = getProductByID(id);
         repository.delete(existing);
